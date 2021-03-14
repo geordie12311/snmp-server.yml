@@ -1,0 +1,35 @@
+---
+- name: Add basic SNMP Server config
+  hosts: all
+  gather_facts: false
+  connection: local
+  
+  vars:
+    cli:
+      username: geordie
+      password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          34613764653334633935613066303164623135346334626538333938653636386466643231373630
+          6539623835333137383939376532313531623063633532620a333835306139626539333336333333
+          33343032623133653466656638633965356237393637323330656162396632336262613435306534
+          3231616439383033370a663533313165656531333736313836393632363035643730666436396462
+          3965
+
+  tasks:
+    - name: add basic SNMP configuration
+      ios_config:
+        provider: "{{ cli }}"
+        authorize: yes
+        lines:
+          - service tcp-keepalives-in
+          - service tcp-keepalives-out
+          - snmp-server community labro
+          - snmp-server enable traps
+          - snmp-server host 192.168.122.2 version 2c labro
+          - do wr mem
+          
+      register: print_output
+
+    -  debug: var=print_output
+    
+    ...
